@@ -37,8 +37,8 @@ class NotificationService {
     if (_ready) return;
     try {
       tzdata.initializeTimeZones();
-      final name = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(name));
+      final info = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(info.identifier));
     } catch (_) {
       // If the platform timezone lookup fails, tz falls back to UTC —
       // reminders still fire, just possibly shifted from local time.
@@ -60,7 +60,7 @@ class NotificationService {
       final android =
           _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
       final darwin =
-          _plugin.resolvePlatformSpecificImplementation<DarwinFlutterLocalNotificationsPlugin>();
+          _plugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
       var granted = true;
       if (android != null) {
         granted = await android.requestNotificationsPermission() ?? true;
@@ -102,6 +102,7 @@ class NotificationService {
         _details,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         matchDateTimeComponents: DateTimeComponents.time,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
       );
     } catch (_) {}
   }
@@ -133,6 +134,7 @@ class NotificationService {
           fireAt,
           _details,
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
         );
       } catch (_) {}
       idx++;
